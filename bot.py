@@ -131,5 +131,3 @@ MessageLoop(bot,main).run_as_thread()
 
 while(1):
     time.sleep(3)
-
-#shhjss
