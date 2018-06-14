@@ -47,10 +47,10 @@ def main(msg):
         except:
             step = app
         #acquisizione dati base
-        if step == None and text == '/start':    #prima volta
+        if step == None and text == '/start':
             register(msg)
         #------------------------------------------------------------
-        elif text == '/start' and step == 8:                   #già registrato
+        elif text == '/start' and step == 8:                   
             bot.sendMessage(chatid,'Sei già registrato!')
         #domanda
         #----_-_-approfondire step locali/database-_-_----
