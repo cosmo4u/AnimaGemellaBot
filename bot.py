@@ -50,7 +50,7 @@ def main(msg):
         if step == None and text == '/start':
             register(msg)
         #------------------------------------------------------------
-        elif text == '/start' and step == 8:                   
+        elif text == '/start' and step == 8:
             bot.sendMessage(chatid,'Sei già registrato!')
         #domanda
         #----_-_-approfondire step locali/database-_-_----
@@ -131,3 +131,5 @@ MessageLoop(bot,main).run_as_thread()
 
 while(1):
     time.sleep(3)
+
+#shhjss
