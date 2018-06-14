@@ -4,7 +4,7 @@ import telepot
 from telepot.loop import MessageLoop
 import time
 import sqlite3
-from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
+from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
 conn = sqlite3.connect('lovebot.db', check_same_thread=False)
 db = conn.cursor()
@@ -28,12 +28,19 @@ def register(msg):
     nome = msg['chat']['first_name']
     cognome = msg['chat']['last_name']
     chatid = msg['chat']['id']
-    step = 1
+    step = -1
 
     db.execute('INSERT INTO Persone (ID, nome, cognome, Step) VALUES (?, ?, ?, ?)',(chatid, nome, cognome, step))
     conn.commit()
-    bot.sendMessage(chatid,'Ciao %s, benvenuto in LoveBot!' % nome)
+    bot.sendMessage(chatid,'Ciao %s, benvenuto in AnimaGemellaBot!' % nome)
 
+def menu(msg, chatid):
+    # creare array di bottoni
+    # pulsantiMenu = [KeyboardButton(text = "Maschio")]
+    # bot.sendMessage(chatid, 'Adesso scegli cosa fare', reply_markup = ReplyKeyboardMarkup(keyboard = [[KeyboardButton(text="")]]))
+def inline():
+    print('ciao')
+#MAIN
 def main(msg):
     chatid = msg['chat']['id']
     content_type, chat_type, chat_id = telepot.glance(msg)
@@ -56,7 +63,28 @@ def main(msg):
         #----_-_-approfondire step locali/database-_-_----
         db.execute('SELECT Step FROM Persone WHERE ID = ?', (chatid,))
         app = db.fetchone()
+        #aggiorna lo step dopo il register
         step = app[0]
+        #domanda sesso
+        if step == -1:
+            bot.sendMessage(chatid,'Scegli il sesso:', reply_markup = ReplyKeyboardMarkup(
+                                                        keyboard = [[KeyboardButton(text = "Maschio"),
+                                                                     KeyboardButton(text = "Femmina")
+                                                                   ]]
+                                                        ))
+            step += 1
+            db.execute('UPDATE Persone SET Step = ? WHERE ID = ?', (step, chatid,))
+            conn.commit()
+        #acquisizione sesso
+        elif step == 0:
+            if msg['text'] != 'Maschio' and msg['text'] != 'Femmina':
+                bot.sendMessage(chatid,'Usa i pulsanti!')
+            else:
+                step += 1
+                db.execute('UPDATE Persone SET Step = ?, Sesso = ? WHERE ID = ?', (step, msg['text'], chatid,))
+                conn.commit()
+                bot.sendMessage(chatid,'Perfetto.', reply_markup = ReplyKeyboardRemove())
+        #domanda età
         if step == 1:
             bot.sendMessage(chatid,'Quanti anni hai?')
             step += 1
@@ -77,11 +105,11 @@ def main(msg):
             elif check == 2:
                 bot.sendMessage(chatid,"Età non valida. Inserisci la tua età reale.")
         #domanda città
-        elif step == 3:
-                    bot.sendMessage(chatid,"Inserisci la tua città.")
-                    step += 1
-                    db.execute('UPDATE Persone SET Step = ? WHERE ID = ?', (step, chatid,))
-                    conn.commit()
+        if step == 3:
+            bot.sendMessage(chatid,"Inserisci la tua città:")
+            step += 1
+            db.execute('UPDATE Persone SET Step = ? WHERE ID = ?', (step, chatid,))
+            conn.commit()
         #acquisizione età
         elif step == 4:
             citta = msg['text']
@@ -95,10 +123,10 @@ def main(msg):
                 db.execute('UPDATE Persone SET Step = ? WHERE ID = ?', (step, chatid,))
                 conn.commit()
         #domanda capelli
-        elif step == 5:
+        if step == 5:
             bot.sendMessage(chatid, 'Scegli il colore dei tuoi capelli (se il colore non esiste scegli altro):',
-                            reply_markup=ReplyKeyboardMarkup(
-                                keyboard=[
+                            reply_markup = ReplyKeyboardMarkup(
+                                keyboard = [
                                     [KeyboardButton(text="Biondi"), KeyboardButton(text="Neri"),
                                      KeyboardButton(text="Rossi"),  KeyboardButton(text="Castani"),
                                      KeyboardButton(text="Verdi"),  KeyboardButton(text="Grigi"),
@@ -113,21 +141,23 @@ def main(msg):
         elif step == 6:
             capelli = msg['text']
             if capelli == 'Altro':
-                bot.sendMessage(chatid, 'Digita il colore dei tuoi capelli: ')
+                bot.sendMessage(chatid, 'Digita il colore dei tuoi capelli: ', reply_markup = ReplyKeyboardRemove())
             else:
                 step += 1
-                db.execute('UPDATE Persone SET Capelli = ?, STEP = ? WHERE ID = ?', (capelli, step, chatid,))
-                conn.commit()
-            # db.execute('SELECT colore from Capelli WHERE UPPER(colore) = UPPER(?)', (capelli,))
-            # if db.fetchone() == None:
-            #     bot.sendMessage(chatid,'Colore non valido. Riprova')
-            # else:
-            #     db.execute('UPDATE Persone SET Capelli = ? WHERE ID = ?', (capelli, chatid,))
-            #     bot.sendMessage(chatid, 'Colore dei capelli inserito correttamente!')
-            #     conn.commit()
+        if step == 7:
+            step += 1
+            bot.sendMessage(chatid, 'Capelli inseriti!', reply_markup = ReplyKeyboardRemove())
+        if step == 8:
+            step += 1
+            bot.sendMessage(chatid, 'Congratulazioni! Registrazione completata!')
+            db.execute('UPDATE Persone SET Capelli = ?, STEP = ? WHERE ID = ?', (capelli, step, chatid,))
+            conn.commit()
+        if step == 9:
+            menu(msg, chatid)
 
 
-MessageLoop(bot,main).run_as_thread()
+MessageLoop(bot, {'chat': main,
+				  'callback_query': inline}).run_as_thread()
 
 while(1):
     time.sleep(3)
