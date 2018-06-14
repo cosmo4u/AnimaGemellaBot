@@ -8,7 +8,7 @@ from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
 
 conn = sqlite3.connect('lovebot.db', check_same_thread=False)
 db = conn.cursor()
-bot = telepot.Bot('510188801:AAGxb8kncYyx07gsI0ae0RvU9Pv22LM7CQU')
+bot = telepot.Bot('566265514:AAEaFer_TjG2QM7BLTiGnK-5wsnVE9Y_WyE')
 
 def checkID():
     db.execute('SELECT nome FROM Persone WHERE ID = ?',())
