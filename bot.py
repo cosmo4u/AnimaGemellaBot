@@ -5,13 +5,10 @@ from telepot.loop import MessageLoop
 import time
 import sqlite3
 from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
+from customKeyb import *
+from updateDB import *
 
-conn = sqlite3.connect('lovebot.db', check_same_thread=False)
-db = conn.cursor()
 bot = telepot.Bot('566265514:AAEaFer_TjG2QM7BLTiGnK-5wsnVE9Y_WyE')
-
-def checkID():
-    db.execute('SELECT nome FROM Persone WHERE ID = ?',())
 
 def checkEta(text):
     try:
@@ -33,13 +30,11 @@ def register(msg):
     db.execute('INSERT INTO Persone (ID, nome, cognome, Step) VALUES (?, ?, ?, ?)',(chatid, nome, cognome, step))
     conn.commit()
     bot.sendMessage(chatid,'Ciao %s, benvenuto in AnimaGemellaBot!' % nome)
-
 # def AnimaGemella():
 #
 # def randomChat():
 
 def menu(msg, chatid):
-    #pulsantiMenu = [KeyboardButton(text = "Maschio")]
     msgtext = msg['text']
     if msgtext == '/Trova anima gemella':
         step = 100
@@ -48,13 +43,7 @@ def menu(msg, chatid):
     elif msgtext == '/Lista dei comandi':
         bot.sendMessage(chatid, 'listadeicomandi')
     else:
-        bot.sendMessage(chatid, 'Adesso scegli cosa fare:',
-                        reply_markup = ReplyKeyboardMarkup(
-                        keyboard = [[
-                        KeyboardButton(text = '/Trova anima gemella')],
-                        [KeyboardButton(text = '/Random chat')],
-                        [KeyboardButton(text = '/Lista dei comandi')]
-                        ]))
+        bot.sendMessage(chatid, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
 #MAIN
 def main(msg):
     chatid = msg['chat']['id']
@@ -82,14 +71,9 @@ def main(msg):
         step = app[0]
         #domanda sesso
         if step == -1:
-            bot.sendMessage(chatid,'Scegli il sesso:', reply_markup = ReplyKeyboardMarkup(
-                                                        keyboard = [[KeyboardButton(text = "Maschio"),
-                                                                     KeyboardButton(text = "Femmina")
-                                                                   ]]
-                                                        ))
+            bot.sendMessage(chatid,'Scegli il sesso:', reply_markup = ReplyKeyboardMarkup(keyboard = keybSesso))
             step += 1
-            db.execute('UPDATE Persone SET Step = ? WHERE ID = ?', (step, chatid,))
-            conn.commit()
+            updateStep(step, chatid)
         #acquisizione sesso
         elif step == 0:
             if msg['text'] != 'Maschio' and msg['text'] != 'Femmina':
@@ -103,8 +87,7 @@ def main(msg):
         if step == 1:
             bot.sendMessage(chatid,'Quanti anni hai?')
             step += 1
-            db.execute('UPDATE Persone SET Step = ? WHERE ID = ?', (step, chatid,))
-            conn.commit()
+            updateStep(step, chatid)
         #acquisizione età
         elif step == 2:
             check = checkEta(text)
@@ -123,8 +106,7 @@ def main(msg):
         if step == 3:
             bot.sendMessage(chatid,"Inserisci la tua città:")
             step += 1
-            db.execute('UPDATE Persone SET Step = ? WHERE ID = ?', (step, chatid,))
-            conn.commit()
+            updateStep(step, chatid)
         #acquisizione età
         elif step == 4:
             citta = msg['text']
@@ -144,18 +126,9 @@ def main(msg):
         #domanda capelli
         if step == 5:
             bot.sendMessage(chatid, 'Scegli il colore dei tuoi capelli (se il colore non esiste scegli altro):',
-                            reply_markup = ReplyKeyboardMarkup(
-                                keyboard = [
-                                    [KeyboardButton(text="Biondi"), KeyboardButton(text="Neri")],
-                                    [KeyboardButton(text="Rossi"),  KeyboardButton(text="Castani")],
-                                    [KeyboardButton(text="Verdi"),  KeyboardButton(text="Grigi")],
-                                    [KeyboardButton(text="Viola"),  KeyboardButton(text="Blu")],
-                                    [KeyboardButton(text="Altro")]
-                                ], resize_keyboard = True
-                            ))
+                            reply_markup = ReplyKeyboardMarkup(keyboard = keybCapelli))
             step += 1
-            db.execute('UPDATE Persone SET Step = ? WHERE ID = ?', (step, chatid,))
-            conn.commit()
+            updateStep(step, chatid)
         #acquisizione capelli
         elif step == 6:
             capelli = msg['text']
@@ -173,7 +146,7 @@ def main(msg):
             conn.commit()
         if step == 9:
             menu(msg, chatid)
-        #
+        #domanda preferenze
         elif step == 100:
             bot.sendMessage(chatid,'Inserisci le tue preferenze:', reply_markup = ReplyKeyboardRemove())
             bot.sendMessage(chatid,'Inserisci le tue preferenze:', )
