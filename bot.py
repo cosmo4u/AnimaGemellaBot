@@ -54,6 +54,11 @@ def main(msg):
             step = app[3]
         except:
             step = app
+
+        #COMANDI ADMIN
+        if msg['text'] == '/lepore':
+            bot.sendPhoto(chat_id=chatid, photo='https://scontent-mxp1-1.cdninstagram.com/vp/eed12ee2a00f92692001dc66ccfe0596/5BAEB0DE/t51.2885-19/s150x150/10554165_1700251363542605_1961641191_a.jpg')
+
         #acquisizione dati base
         if step == None and text == '/start':
             register(msg)
