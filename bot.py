@@ -35,6 +35,7 @@ def register(msg):
     bot.sendMessage(chatid,'Ciao %s, benvenuto in AnimaGemellaBot!' % nome)
 
 def menu(msg, chatid):
+    print('ciao')
     # creare array di bottoni
     # pulsantiMenu = [KeyboardButton(text = "Maschio")]
     # bot.sendMessage(chatid, 'Adesso scegli cosa fare', reply_markup = ReplyKeyboardMarkup(keyboard = [[KeyboardButton(text="")]]))
@@ -57,7 +58,7 @@ def main(msg):
         if step == None and text == '/start':
             register(msg)
         #------------------------------------------------------------
-        elif text == '/start' and step == 8:
+        elif text == '/start' and step == 9:
             bot.sendMessage(chatid,'Sei già registrato!')
         #domanda
         #----_-_-approfondire step locali/database-_-_----
