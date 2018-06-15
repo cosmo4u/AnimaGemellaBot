@@ -4,7 +4,7 @@ import telepot
 from telepot.loop import MessageLoop
 import time
 import sqlite3
-from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
 
 conn = sqlite3.connect('lovebot.db', check_same_thread=False)
 db = conn.cursor()
@@ -34,13 +34,27 @@ def register(msg):
     conn.commit()
     bot.sendMessage(chatid,'Ciao %s, benvenuto in AnimaGemellaBot!' % nome)
 
+# def AnimaGemella():
+#
+# def randomChat():
+
 def menu(msg, chatid):
-    print('ciao')
-    # creare array di bottoni
-    # pulsantiMenu = [KeyboardButton(text = "Maschio")]
-    # bot.sendMessage(chatid, 'Adesso scegli cosa fare', reply_markup = ReplyKeyboardMarkup(keyboard = [[KeyboardButton(text="")]]))
-def inline():
-    print('ciao')
+    #pulsantiMenu = [KeyboardButton(text = "Maschio")]
+    msgtext = msg['text']
+    if msgtext == '/Trova anima gemella':
+        step = 100
+    elif msgtext == '/Random chat':
+        step = 200
+    elif msgtext == '/Lista dei comandi':
+        bot.sendMessage(chatid, 'listadeicomandi')
+    else:
+        bot.sendMessage(chatid, 'Adesso scegli cosa fare:',
+                        reply_markup = ReplyKeyboardMarkup(
+                        keyboard = [[
+                        KeyboardButton(text = '/Trova anima gemella')],
+                        [KeyboardButton(text = '/Random chat')],
+                        [KeyboardButton(text = '/Lista dei comandi')]
+                        ]))
 #MAIN
 def main(msg):
     chatid = msg['chat']['id']
@@ -58,7 +72,7 @@ def main(msg):
         if step == None and text == '/start':
             register(msg)
         #------------------------------------------------------------
-        elif text == '/start' and step == 9:
+        elif text == '/start' and step >= 9:
             bot.sendMessage(chatid,'Sei già registrato!')
         #domanda
         #----_-_-approfondire step locali/database-_-_----
@@ -115,9 +129,12 @@ def main(msg):
         elif step == 4:
             citta = msg['text']
             db.execute('SELECT * FROM comuni WHERE UPPER(nome) = UPPER(?)', (citta,))
-            if db.fetchone() == None:
+            infocitta = db.fetchone()
+            if infocitta == None:
                 bot.sendMessage(chatid,"Città non valida. Riprova.")
             else:
+                print('citta')
+                print(infocitta)
                 db.execute('UPDATE Persone SET Citta = ? WHERE ID = ?', (citta, chatid,))
                 bot.sendMessage(chatid,"Città inserita correttamente!")
                 step += 1
@@ -128,11 +145,11 @@ def main(msg):
             bot.sendMessage(chatid, 'Scegli il colore dei tuoi capelli (se il colore non esiste scegli altro):',
                             reply_markup = ReplyKeyboardMarkup(
                                 keyboard = [
-                                    [KeyboardButton(text="Biondi"), KeyboardButton(text="Neri"),
-                                     KeyboardButton(text="Rossi"),  KeyboardButton(text="Castani"),
-                                     KeyboardButton(text="Verdi"),  KeyboardButton(text="Grigi"),
-                                     KeyboardButton(text="Viola"),  KeyboardButton(text="Blu"),
-                                     KeyboardButton(text="Altro")]
+                                    [KeyboardButton(text="Biondi"), KeyboardButton(text="Neri")],
+                                    [KeyboardButton(text="Rossi"),  KeyboardButton(text="Castani")],
+                                    [KeyboardButton(text="Verdi"),  KeyboardButton(text="Grigi")],
+                                    [KeyboardButton(text="Viola"),  KeyboardButton(text="Blu")],
+                                    [KeyboardButton(text="Altro")]
                                 ], resize_keyboard = True
                             ))
             step += 1
@@ -155,10 +172,21 @@ def main(msg):
             conn.commit()
         if step == 9:
             menu(msg, chatid)
+        #
+        elif step == 100:
+            bot.sendMessage(chatid,'Inserisci le tue preferenze:', reply_markup = ReplyKeyboardRemove())
+            bot.sendMessage(chatid,'Inserisci le tue preferenze:', )
+            step = 9
+            db.execute('UPDATE Persone SET STEP = ? WHERE ID = ?', (step, chatid,))
+            conn.commit()
+        elif step == 200:
+            # randomChat()
+            step = 9
+            db.execute('UPDATE Persone SET STEP = ? WHERE ID = ?', (step, chatid,))
+            conn.commit()
 
 
-MessageLoop(bot, {'chat': main,
-				  'callback_query': inline}).run_as_thread()
+MessageLoop(bot,main).run_as_thread()
 
 while(1):
     time.sleep(3)
