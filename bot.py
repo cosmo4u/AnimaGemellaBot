@@ -128,14 +128,15 @@ def main(msg):
         #acquisizione età
         elif step == 4:
             citta = msg['text']
-            db.execute('SELECT * FROM comuni WHERE UPPER(nome) = UPPER(?)', (citta,))
+            db.execute('SELECT nome, provincia_nome, regione_nome FROM comuni WHERE UPPER(nome) = UPPER(?)', (citta,))
             infocitta = db.fetchone()
             if infocitta == None:
                 bot.sendMessage(chatid,"Città non valida. Riprova.")
             else:
-                print('citta')
-                print(infocitta)
-                db.execute('UPDATE Persone SET Citta = ? WHERE ID = ?', (citta, chatid,))
+                citta = infocitta[0]
+                provincia = infocitta[1]
+                regione = infocitta[2]
+                db.execute('UPDATE Persone SET Citta = ?, Provincia = ?, Regione = ? WHERE ID = ?', (citta, provincia, regione, chatid,))
                 bot.sendMessage(chatid,"Città inserita correttamente!")
                 step += 1
                 db.execute('UPDATE Persone SET Step = ? WHERE ID = ?', (step, chatid,))
