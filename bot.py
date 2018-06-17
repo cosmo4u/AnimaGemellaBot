@@ -64,12 +64,15 @@ def main(msg):
     if content_type == 'text':
         text = msg['text']
         if (chatid == 409317117 or chatid == 423869824) and text == '/deleteme':
+            stepp = step
             db.execute('DELETE FROM Persone WHERE ID = ?', (chatid,))
             db.execute('DELETE FROM AnimaGemella WHERE ID = ?', (chatid,))
             conn.commit()
             bot.sendMessage(chatid, 'Non fare troppo lo sborone')
+            step = stepp
         if (chatid == 409317117 or chatid == 423869824) and text == '/delete':
             bot.sendMessage(chatid,'Cognome: ')
+            stepp = step
             step=1000
             updateStep(step, chatid)
         elif step == 1000:
@@ -81,6 +84,7 @@ def main(msg):
             db.execute('DELETE FROM AnimaGemella WHERE ID = ?', (id,))
             conn.commit()
             bot.sendMessage(chatid, 'Sborrami in faccia')
+            step = stepp
         #acquisizione dati base
         if step == None and text == '/start':
             register(msg)
