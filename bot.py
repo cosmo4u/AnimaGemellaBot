@@ -270,13 +270,38 @@ def main(msg):
             try:
                 infoluogo = db.fetchone()[0]
             except:
-                bot.sendMessage(chatid,'%s non valida!' % ricerca)
+                bot.sendMessage(chatid,'%s non valida! Riprova.' % ricerca)
             else:
                 db.execute('UPDATE AnimaGemella SET Luogo = ? WHERE ID = ?', (infoluogo, chatid,))
                 conn.commit()
                 bot.sendMessage(chatid,'%s inserita correttamente!' % ricerca)
-                step = 9
+                step += 1
                 updateStep(step, chatid)
+        if step == 110:
+            bot.sendMessage(chatid,'Sto cercando la tua Anima Gemella...')
+            timeric = 0
+            while step != 111:
+                if timeric == 15:
+                    bot.sendMessage(chatid,'Riceverai una notifica appena avrò trovato la tua Anima Gemella!')
+                db.execute('SELECT * FROM AnimaGemella WHERE ID = ?', (chatid,))
+                infoPref = db.fetchone()
+                print(infoPref)
+                if infoPref[4] == 'Citta':
+                    db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Citta = ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[5],))
+                elif infoPref[4] == 'Provincia':
+                    db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Provincia = ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[5],))
+                elif infoPref[4] == 'Regione':
+                    db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Regione = ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[5],))
+                idAnimaGemella = db.fetchone()
+                if idAnimaGemella != None:
+                    db.execute('SELECT Nome FROM Persone WHERE ID = ?', (idAnimaGemella))
+                    nome = db.fetchone()[0]
+                    step += 1
+                    bot.sendMessage(chatid,'Stai parlando con '+nome+"!")
+                time.sleep(3)
+                timeric += 3
+
+
         if text == 'Random Chat':
             step = 200
             updateStep(step, chatid)
