@@ -2,7 +2,7 @@
 from telepot.namedtuple import KeyboardButton
 
 keybMenu = [[KeyboardButton(text = 'Trova Anima Gemella')],
-            [KeyboardButton(text = 'Random Chat')],
+            [KeyboardButton(text = 'Invia una segnalazione')],
             [KeyboardButton(text = 'Lista dei Comandi')],
             [KeyboardButton(text = 'About')]
            ]

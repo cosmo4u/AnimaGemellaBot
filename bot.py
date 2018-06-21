@@ -42,8 +42,9 @@ def checkEtaMax(text, etaMin):
 
 def register(msg):
     nome = msg['chat']['first_name']
-    cognome = msg['chat']['last_name']
-    if cognome == None:
+    try:
+        cognome = msg['chat']['last_name']
+    except:
         cognome = "Default"
     chatid = msg['chat']['id']
     step = -1
@@ -188,7 +189,7 @@ def main(msg):
         #domanda preferenze - sesso
         #aggiorna step dopo menu
         step = readStep(chatid)
-        if text == 'Trova Anima Gemella' and step == 9 or step == 999:
+        if text == 'Trova Anima Gemella' and (step == 9 or step == 999):
             step = 100
             updateStep(step, chatid)
         if step == 100:
@@ -333,7 +334,6 @@ def main(msg):
             bot.sendMessage(chatid,'Sto cercando la tua Anima Gemella...')
             db.execute('SELECT * FROM AnimaGemella WHERE ID = ?', (chatid,))
             infoPref = db.fetchone()
-            print(infoPref)
             if infoPref[4] == 'Citta':
                 db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Citta = ? AND Step = 110 AND ID != ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[5], infoPref[6],))
             elif infoPref[4] == 'Provincia':
@@ -379,11 +379,11 @@ def main(msg):
             else:
                 if text != '/Si' and text != '/No':
                     bot.sendMessage(idAnimaGemella,text)
-        if text == 'Invia una segnalazione' and step == 9 or step == 999:
+        if text == 'Invia una segnalazione' and (step == 9 or step == 999):
             bot.sendMessage(chatid,'Adesso puoi segnalare un bug o inviare un feedback!\nScrivilo qui oppure se vuoi tornare al menu scrivi /menu.', reply_markup = ReplyKeyboardRemove())
             step = 200
             updateStep(step, chatid)
-        elif text == 'Lista dei Comandi' and step == 9 or step == 999:
+        elif text == 'Lista dei Comandi' and (step == 9 or step == 999):
             bot.sendMessage(chatid, '/menu - Torna al menù principale\n/end - Termina una conversazione')
             step = 300
         elif step == 200:
@@ -397,7 +397,7 @@ def main(msg):
                 bot.sendMessage(chatid,'Grazie mille per la segnalazione!')
                 step = 9
                 updateStep(step, chatid)
-        elif text == 'About' and step == 9 or step == 999:
+        elif text == 'About' and (step == 9 or step == 999):
             bot.sendMessage(chatid,'Bot sviluppato da:')
             bot.sendMessage(chatid,'Davide Gilè: https://www.instagram.com/davide_gile/')
             bot.sendMessage(chatid,'Joe Lepore: https://www.instagram.com/joe.lepore/')
