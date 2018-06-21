@@ -3,7 +3,9 @@ from telepot.namedtuple import KeyboardButton
 
 keybMenu = [[KeyboardButton(text = 'Trova Anima Gemella')],
             [KeyboardButton(text = 'Random Chat')],
-            [KeyboardButton(text = 'Lista dei Comandi')]]
+            [KeyboardButton(text = 'Lista dei Comandi')],
+            [KeyboardButton(text = 'About')]
+           ]
 
 keybSesso = [[KeyboardButton(text = 'Maschio'), KeyboardButton(text = 'Femmina')]]
 
@@ -17,3 +19,9 @@ keybCapelli = [[KeyboardButton(text="Biondi"), KeyboardButton(text="Neri")],
 keybLuogo = [[KeyboardButton(text="Per Regione")],
              [KeyboardButton(text="Per Provincia")],
              [KeyboardButton(text="Per Citta'")]]
+
+keybRiprova = [[KeyboardButton(text="Riprova")]]
+
+keybInfo = [[KeyboardButton(text="Info")]]
+
+keybSiNo = [[KeyboardButton(text="/Si"), KeyboardButton(text="/No")]]

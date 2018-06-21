@@ -1,4 +1,9 @@
 # coding=utf-8
+# cat sitecustomize.py
+# encoding=utf8
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import unicodedata
 from pprint import pprint
 import telepot
@@ -35,19 +40,19 @@ def checkEtaMax(text, etaMin):
         else:
             return 0
 
-
 def register(msg):
     nome = msg['chat']['first_name']
     cognome = msg['chat']['last_name']
+    if cognome == None:
+        cognome = "Default"
     chatid = msg['chat']['id']
     step = -1
 
     db.execute('INSERT INTO Persone (ID, nome, cognome, Step) VALUES (?, ?, ?, ?)',(chatid, nome, cognome, step))
     db.execute('INSERT INTO AnimaGemella (ID) VALUES (?)', (chatid,))
+    db.execute('UPDATE AnimaGemella SET IDAG = ? WHERE ID = ?', (chatid, chatid,))
     conn.commit()
     bot.sendMessage(chatid,'Ciao %s, benvenuto in AnimaGemellaBot!' % nome)
-
-# def randomChat():
 
 def menu(msg, chatid):
     pass
@@ -56,25 +61,21 @@ def menu(msg, chatid):
 def main(msg):
     chatid = msg['chat']['id']
     content_type, chat_type, chat_id = telepot.glance(msg)
-    #step
-    try:
-        step = readStep(chatid)
-    except:
-        step = None
     if content_type == 'text':
         text = msg['text']
+        #step
+        try:
+            step = readStep(chatid)
+        except:
+            step = None
         if (chatid == 409317117 or chatid == 423869824) and text == '/deleteme':
-            stepp = step
             db.execute('DELETE FROM Persone WHERE ID = ?', (chatid,))
             db.execute('DELETE FROM AnimaGemella WHERE ID = ?', (chatid,))
             conn.commit()
-            bot.sendMessage(chatid, 'Non fare troppo lo sborone')
-            step = stepp
+            bot.sendMessage(chatid, 'Non fare troppo lo sborone e clicca /start')
         if (chatid == 409317117 or chatid == 423869824) and text == '/delete':
             bot.sendMessage(chatid,'Cognome: ')
-            stepp = step
             step=1000
-            updateStep(step, chatid)
         elif step == 1000:
             cognome = msg['text']
             print(cognome)
@@ -84,7 +85,21 @@ def main(msg):
             db.execute('DELETE FROM AnimaGemella WHERE ID = ?', (id,))
             conn.commit()
             bot.sendMessage(chatid, 'Sborrami in faccia')
-            step = stepp
+            #step
+            try:
+                step = readStep(chatid)
+            except:
+                step = None
+        if text == '/menu':
+            if step < 9:
+                bot.sendMessage(chatid,'Devi prima registrarti.')
+            elif (step > 8 and step < 113) or step == 200:
+                db.execute('DELETE FROM AnimaGemella WHERE ID = ?', (chatid,))
+                db.execute('INSERT INTO AnimaGemella (ID) VALUES (?)', (chatid,))
+                db.execute('UPDATE AnimaGemella SET IDAG = ? WHERE ID = ?', (chatid, chatid,))
+                conn.commit()
+                step = 9
+                updateStep(step,chatid)
         #acquisizione dati base
         if step == None and text == '/start':
             register(msg)
@@ -173,7 +188,7 @@ def main(msg):
         #domanda preferenze - sesso
         #aggiorna step dopo menu
         step = readStep(chatid)
-        if text == 'Trova Anima Gemella' and step > 8:
+        if text == 'Trova Anima Gemella' and step == 9 or step == 999:
             step = 100
             updateStep(step, chatid)
         if step == 100:
@@ -277,43 +292,122 @@ def main(msg):
                 bot.sendMessage(chatid,'%s inserita correttamente!' % ricerca)
                 step += 1
                 updateStep(step, chatid)
+        elif step == 111:
+            if text == 'Info':
+                db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
+                idAnimaGemella = db.fetchone()[0]
+                db.execute('SELECT * FROM Persone WHERE ID = ?',(idAnimaGemella,))
+                infoAnima = db.fetchone()
+                bot.sendMessage(chatid,'Nome: %s\nSesso: %s\nEtà: %d\nCittà: %s(%s)\nCapelli: %s' % (infoAnima[3], infoAnima[2], infoAnima[5], infoAnima[6], infoAnima[7], infoAnima[9]))
+                bot.sendMessage(chatid,'Vuoi parlarci?', reply_markup = ReplyKeyboardMarkup(keyboard = keybSiNo))
+                step += 1
+                updateStep(step,chatid)
+        elif step == 112:
+            db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?',(chatid,))
+            idAnimaGemella = db.fetchone()[0]
+            if text == '/Si':
+                db.execute('SELECT Nome FROM Persone WHERE ID = ?', (idAnimaGemella,))
+                nome = db.fetchone()[0]
+                bot.sendMessage(chatid,'Hai accettato la richiesta!\nOra stai parlando con %s!\n\n- Per vedere le informazioni della tua anima gemella scrivi /info\n- Per terminare la conversione scrivi /end' % nome,reply_markup = ReplyKeyboardRemove())
+                db.execute('SELECT * FROM Persone WHERE ID = ?', (chatid,))
+                infoAnima = db.fetchone()
+                bot.sendMessage(idAnimaGemella,'La richiesta è stata accettata!\nOra stai parlando con %s\nSesso: %s\nEtà: %d\nCittà: %s (%s)\nCapelli: %s\n\n- Per vedere le informazioni della tua anima gemella scrivi /info\n- Per terminare la conversione scrivi /end' % (infoAnima[3], infoAnima[2], infoAnima[5], infoAnima[6], infoAnima[7], infoAnima[9]))
+                step += 1
+                updateStep(step,chatid)
+                updateStep(step,idAnimaGemella)
+            elif text == '/No':
+                bot.sendMessage(idAnimaGemella,"La richiesta non è stata accettata.\nVuoi cercare un'altra persona?.", reply_markup = ReplyKeyboardMarkup(keyboard = keybSiNo))
+                bot.sendMessage(chatid,"Hai rifiutato la richiesta.\nVuoi cercare un'altra persona?.", reply_markup = ReplyKeyboardMarkup(keyboard = keybSiNo))
+                step = 114
+                updateStep(step, idAnimaGemella)
+                updateStep(step, chatid)
+        elif step == 114:
+            if text == '/Si':
+                step = 110
+                updateStep(step,chatid)
+            elif text == '/No':
+                step = 9
+                updateStep(step,chatid)
+        #ricerca
         if step == 110:
             bot.sendMessage(chatid,'Sto cercando la tua Anima Gemella...')
-            timeric = 0
-            while step != 111:
-                if timeric == 15:
-                    bot.sendMessage(chatid,'Riceverai una notifica appena avrò trovato la tua Anima Gemella!')
-                db.execute('SELECT * FROM AnimaGemella WHERE ID = ?', (chatid,))
-                infoPref = db.fetchone()
-                print(infoPref)
-                if infoPref[4] == 'Citta':
-                    db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Citta = ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[5],))
-                elif infoPref[4] == 'Provincia':
-                    db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Provincia = ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[5],))
-                elif infoPref[4] == 'Regione':
-                    db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Regione = ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[5],))
+            db.execute('SELECT * FROM AnimaGemella WHERE ID = ?', (chatid,))
+            infoPref = db.fetchone()
+            print(infoPref)
+            if infoPref[4] == 'Citta':
+                db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Citta = ? AND Step = 110 AND ID != ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[5], infoPref[6],))
+            elif infoPref[4] == 'Provincia':
+                db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Provincia = ? AND Step = 110 AND ID != ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[5], infoPref[6],))
+            elif infoPref[4] == 'Regione':
+                db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Regione = ? AND Step = 110 AND ID != ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[5], infoPref[6],))
+            try:
+                idAnimaGemella = db.fetchone()[0]
+            except:
                 idAnimaGemella = db.fetchone()
-                if idAnimaGemella != None:
-                    db.execute('SELECT Nome FROM Persone WHERE ID = ?', (idAnimaGemella))
-                    nome = db.fetchone()[0]
-                    step += 1
-                    bot.sendMessage(chatid,'Stai parlando con '+nome+"!")
-                time.sleep(3)
-                timeric += 3
-
-
-        if text == 'Random Chat':
+            if idAnimaGemella != None:
+                db.execute('UPDATE AnimaGemella SET IDAG = ? WHERE ID = ?', (idAnimaGemella, chatid,))
+                db.execute('UPDATE AnimaGemella SET IDAG = ? WHERE ID = ?', (chatid, idAnimaGemella,))
+                conn.commit()
+                bot.sendMessage(idAnimaGemella, 'Qualcuno ti ha trovato!\nClicca su Info per vedere chi è!', reply_markup = ReplyKeyboardMarkup(keyboard = keybInfo))
+                db.execute('SELECT Nome FROM Persone WHERE ID = ?', (idAnimaGemella,))
+                nome = db.fetchone()[0]
+                bot.sendMessage(chatid,'Hai trovato una persona, attendi che accetti o rifiuti la richiesta...', reply_markup = ReplyKeyboardRemove())
+                step += 1
+                updateStep(step, idAnimaGemella)
+            else:
+                bot.sendMessage(chatid,'La ricerca non ha prodotto risultati, clicca Riprova per fare un altro tentativo.', reply_markup = ReplyKeyboardMarkup(keyboard = keybRiprova))
+        #chat anima gemella
+        elif step == 113:
+            db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?',(chatid,))
+            idAnimaGemella = db.fetchone()[0]
+            if text == '/end':
+                db.execute('SELECT Nome FROM Persone WHERE ID = ?', (chatid,))
+                nome = db.fetchone()[0]
+                db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
+                idAnimaGemella = db.fetchone()[0]
+                bot.sendMessage(chatid,'Hai terminato la conversazione!')
+                bot.sendMessage(idAnimaGemella,nome + ' ha terminato la conversazione!')
+                step = 999
+                updateStep(step,chatid)
+                updateStep(step,idAnimaGemella)
+            elif text == '/info':
+                db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
+                idAnimaGemella = db.fetchone()[0]
+                db.execute('SELECT * FROM Persone WHERE ID = ?',(idAnimaGemella,))
+                infoAnima = db.fetchone()
+                bot.sendMessage(chatid,'Nome: %s\nSesso: %s\nEtà: %d\nCittà: %s (%s)\nCapelli: %s' % (infoAnima[3], infoAnima[2], infoAnima[5], infoAnima[6], infoAnima[7], infoAnima[9]))
+            else:
+                if text != '/Si' and text != '/No':
+                    bot.sendMessage(idAnimaGemella,text)
+        if text == 'Invia una segnalazione' and step == 9 or step == 999:
+            bot.sendMessage(chatid,'Adesso puoi segnalare un bug o inviare un feedback!\nScrivilo qui oppure se vuoi tornare al menu scrivi /menu.', reply_markup = ReplyKeyboardRemove())
             step = 200
             updateStep(step, chatid)
-        elif text == 'Lista dei Comandi':
-            bot.sendMessage(chatid, 'listadeicomandi')
+        elif text == 'Lista dei Comandi' and step == 9 or step == 999:
+            bot.sendMessage(chatid, '/menu - Torna al menù principale\n/end - Termina una conversazione')
+            step = 300
         elif step == 200:
-            # randomChat()
-            step = 9
-            db.execute('UPDATE Persone SET STEP = ? WHERE ID = ?', (step, chatid,))
-            conn.commit()
+            if text != '/menu':
+                file = open("feedback.txt", "a")
+                nome = msg['chat']['first_name']
+                cognome = msg['chat']['last_name']
+                data = msg['date']
+                file.write(nome+' '+cognome+' '+str(data)+' '+str(chatid)+'\nFeedback:\n'+text+'\n-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\n\n')
+                file.close()
+                bot.sendMessage(chatid,'Grazie mille per la segnalazione!')
+                step = 9
+                updateStep(step, chatid)
+        elif text == 'About' and step == 9 or step == 999:
+            bot.sendMessage(chatid,'Bot sviluppato da:')
+            bot.sendMessage(chatid,'Davide Gilè: https://www.instagram.com/davide_gile/')
+            bot.sendMessage(chatid,'Joe Lepore: https://www.instagram.com/joe.lepore/')
         if step == 9:
             bot.sendMessage(chatid, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
+        if step == 999:
+            bot.sendMessage(chatid, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
+            bot.sendMessage(idAnimaGemella, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
+    # elif content_type == 'audio':
+    #     bot.sendAudio(chatid,'')
 
 
 MessageLoop(bot,main).run_as_thread()
