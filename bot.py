@@ -62,13 +62,13 @@ def menu(msg, chatid):
 def main(msg):
     chatid = msg['chat']['id']
     content_type, chat_type, chat_id = telepot.glance(msg)
+    #step
+    try:
+        step = readStep(chatid)
+    except:
+        step = None
     if content_type == 'text':
         text = msg['text']
-        #step
-        try:
-            step = readStep(chatid)
-        except:
-            step = None
         if (chatid == 409317117 or chatid == 423869824) and text == '/deleteme':
             db.execute('DELETE FROM Persone WHERE ID = ?', (chatid,))
             db.execute('DELETE FROM AnimaGemella WHERE ID = ?', (chatid,))
@@ -413,9 +413,26 @@ def main(msg):
             idAnimaGemella = db.fetchone()[0]
             bot.sendMessage(chatid, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
             bot.sendMessage(idAnimaGemella, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
-    # elif content_type == 'audio':
-    #     bot.sendAudio(chatid,'')
-
+    elif content_type == 'photo':
+        if step == 113:
+            db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
+            idAnimaGemella = db.fetchone()[0]
+            fileid = msg['photo'][0]['file_id']
+            bot.sendPhoto(idAnimaGemella,fileid)
+            strphoto = str(chatid)+'_'+str(msg['date'])
+            bot.download_file(fileid, '/home/davide/Scrivania/AnimaGemellaBot/Immagini/'+strphoto)
+    elif content_type == 'audio':
+        if step == 113:
+            db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
+            idAnimaGemella = db.fetchone()[0]
+            fileid = msg['audio']['file_id']
+            bot.sendAudio(idAnimaGemella,fileid)
+    elif content_type == 'voice':
+        if step == 113:
+            db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
+            idAnimaGemella = db.fetchone()[0]
+            fileid = msg['voice']['file_id']
+            bot.sendVoice(idAnimaGemella,fileid)
 
 MessageLoop(bot,main).run_as_thread()
 
