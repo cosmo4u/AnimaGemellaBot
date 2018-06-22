@@ -77,6 +77,7 @@ def main(msg):
         if (chatid == 409317117 or chatid == 423869824) and text == '/delete':
             bot.sendMessage(chatid,'Cognome: ')
             step=1000
+            updateStep(step, chatid)
         elif step == 1000:
             cognome = msg['text']
             print(cognome)
@@ -94,7 +95,7 @@ def main(msg):
         if text == '/menu':
             if step < 9:
                 bot.sendMessage(chatid,'Devi prima registrarti.')
-            elif (step > 8 and step < 113) or step == 200:
+            elif (step > 8 and step < 113) or step == 200 or step == 115:
                 db.execute('DELETE FROM AnimaGemella WHERE ID = ?', (chatid,))
                 db.execute('INSERT INTO AnimaGemella (ID) VALUES (?)', (chatid,))
                 db.execute('UPDATE AnimaGemella SET IDAG = ? WHERE ID = ?', (chatid, chatid,))
@@ -354,8 +355,10 @@ def main(msg):
                 bot.sendMessage(chatid,'Hai trovato una persona, attendi che accetti o rifiuti la richiesta...', reply_markup = ReplyKeyboardRemove())
                 step += 1
                 updateStep(step, idAnimaGemella)
+                step = 115
+                updateStep(step, chatid)
             else:
-                bot.sendMessage(chatid,'La ricerca non ha prodotto risultati, clicca Riprova per fare un altro tentativo.', reply_markup = ReplyKeyboardMarkup(keyboard = keybRiprova))
+                bot.sendMessage(chatid,'La ricerca non ha prodotto risultati, clicca Riprova per fare un altro tentativo oppure scrivi /menu per tornare al menù.', reply_markup = ReplyKeyboardMarkup(keyboard = keybRiprova))
         #chat anima gemella
         elif step == 113:
             db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?',(chatid,))
@@ -406,6 +409,8 @@ def main(msg):
         if step == 9:
             bot.sendMessage(chatid, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
         if step == 999:
+            db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
+            idAnimaGemella = db.fetchone()[0]
             bot.sendMessage(chatid, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
             bot.sendMessage(idAnimaGemella, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
     # elif content_type == 'audio':
