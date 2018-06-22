@@ -376,6 +376,8 @@ def main(msg):
                 db.execute('SELECT * FROM Persone WHERE ID = ?',(idAnimaGemella,))
                 infoAnima = db.fetchone()
                 bot.sendMessage(chatid,'Nome: %s\nSesso: %s\nEtà: %d\nCittà: %s (%s)\nCapelli: %s' % (infoAnima[3], infoAnima[2], infoAnima[5], infoAnima[6], infoAnima[7], infoAnima[9]))
+            elif text == '/menu':
+                bot.sendMessage(chatid,'Per terminare la conversazione ed andare al menù scrivi /end!')
             else:
                 if text != '/Si' and text != '/No':
                     bot.sendMessage(idAnimaGemella,text)
