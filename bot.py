@@ -14,7 +14,7 @@ from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboar
 from customKeyb import *
 from manageDB import *
 
-bot = telepot.Bot('566265514:AAEaFer_TjG2QM7BLTiGnK-5wsnVE9Y_WyE')
+bot = telepot.Bot('510188801:AAGxb8kncYyx07gsI0ae0RvU9Pv22LM7CQU')
 
 def checkEta(text):
     try:
@@ -92,6 +92,18 @@ def main(msg):
                 step = readStep(chatid)
             except:
                 step = None
+        elif (chatid == 409317117 or chatid == 423869824) and text == '/broadcast':
+            bot.sendMessage(chatid,'Scrivi il messaggio broadcast: ')
+            step = -1000
+            updateStep(step,chatid)
+        elif step == -1000:
+            db.execute('SELECT ID FROM Persone')
+            idList = db.fetchall()
+            for row in idList:
+                id = row[0]
+                bot.sendMessage(id,'News: \n'+text)
+            step = 9
+            updateStep(step,chatid)
         if text == '/menu':
             if step < 9:
                 bot.sendMessage(chatid,'Devi prima registrarti.')
