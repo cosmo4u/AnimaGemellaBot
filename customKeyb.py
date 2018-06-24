@@ -18,9 +18,11 @@ keybCapelli = [[KeyboardButton(text="Biondi"), KeyboardButton(text="Neri")],
 
 keybLuogo = [[KeyboardButton(text="Per Regione")],
              [KeyboardButton(text="Per Provincia")],
-             [KeyboardButton(text="Per Citta'")]]
+             [KeyboardButton(text="Per Citta'")],
+             [KeyboardButton(text="Italia")]]
 
-keybRiprova = [[KeyboardButton(text="Riprova")]]
+keybRiprova = [[KeyboardButton(text="Riprova")],
+               [KeyboardButton(text="/menu")]]
 
 keybInfo = [[KeyboardButton(text="Info")]]
 

@@ -14,7 +14,9 @@ from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboar
 from customKeyb import *
 from manageDB import *
 
-bot = telepot.Bot('510188801:AAGxb8kncYyx07gsI0ae0RvU9Pv22LM7CQU')
+bot = telepot.Bot('566265514:AAEaFer_TjG2QM7BLTiGnK-5wsnVE9Y_WyE')
+
+pstep = 0
 
 def checkEta(text):
     try:
@@ -60,6 +62,7 @@ def menu(msg, chatid):
 
 #MAIN
 def main(msg):
+    global pstep
     chatid = msg['chat']['id']
     content_type, chat_type, chat_id = telepot.glance(msg)
     #step
@@ -94,16 +97,17 @@ def main(msg):
                 step = None
         elif (chatid == 409317117 or chatid == 423869824) and text == '/broadcast':
             bot.sendMessage(chatid,'Scrivi il messaggio broadcast: ')
-            step = -1000
+            pstep = step
+            step = 1810
             updateStep(step,chatid)
-        elif step == -1000:
+        elif step == 1810:
             db.execute('SELECT ID FROM Persone')
             idList = db.fetchall()
-            for row in idList:
-                id = row[0]
-                bot.sendMessage(id,'News: \n'+text)
-            step = 9
-            updateStep(step,chatid)
+            if text != '/menu':
+                for row in idList:
+                    id = row[0]
+                    bot.sendMessage(id,'News: \n'+text)
+            updateStep(pstep,chatid)
         if text == '/menu':
             if step < 9:
                 bot.sendMessage(chatid,'Devi prima registrarti.')
@@ -274,7 +278,7 @@ def main(msg):
         #acquisizione ricerca
         elif step == 107:
             text = msg['text']
-            if text != 'Per Regione' and text != 'Per Provincia' and text != "Per Citta'":
+            if text != 'Per Regione' and text != 'Per Provincia' and text != "Per Citta'" and text != "Italia":
                 bot.sendMessage(chatid,'Usa i pulsanti!')
             elif text == 'Per Regione':
                 db.execute('UPDATE AnimaGemella SET Ricerca = "Regione" WHERE ID = ?', (chatid,))
@@ -285,6 +289,11 @@ def main(msg):
             elif text == "Per Citta'":
                 db.execute('UPDATE AnimaGemella SET Ricerca = "Citta" WHERE ID = ?', (chatid,))
                 step += 1
+            elif text == "Italia":
+                db.execute('UPDATE AnimaGemella SET Ricerca = "Italia" WHERE ID = ?', (chatid,))
+                step = 110
+                updateStep(step, chatid)
+
             conn.commit()
         #domanda luogo
         if step == 108:
@@ -360,6 +369,8 @@ def main(msg):
                 db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Provincia = ? AND Step = 110 AND ID != ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[5], infoPref[6],))
             elif infoPref[4] == 'Regione':
                 db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Regione = ? AND Step = 110 AND ID != ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[5], infoPref[6],))
+            elif infoPref[4] == 'Italia':
+                db.execute('SELECT ID FROM Persone WHERE ID != ? AND Sesso = ? AND Eta >= ? AND Eta <= ? AND Step = 110 AND ID != ?', (chatid, infoPref[1], infoPref[2], infoPref[3], infoPref[6],))
             try:
                 idAnimaGemella = db.fetchone()[0]
             except:
@@ -404,7 +415,7 @@ def main(msg):
                 if text != '/Si' and text != '/No':
                     bot.sendMessage(idAnimaGemella,text)
         if text == 'Invia una segnalazione' and (step == 9 or step == 999):
-            bot.sendMessage(chatid,'Adesso puoi segnalare un bug o inviare un feedback!\nScrivilo qui oppure se vuoi tornare al menu scrivi /menu.', reply_markup = ReplyKeyboardRemove())
+            bot.sendMessage(chatid,'Adesso puoi segnalare un bug o inviare un feedback!\nScrivilo qui oppure torna al menu scrivendo /menu.', reply_markup = ReplyKeyboardRemove())
             step = 200
             updateStep(step, chatid)
         elif text == 'Lista dei Comandi' and (step == 9 or step == 999):
@@ -426,7 +437,7 @@ def main(msg):
             bot.sendMessage(chatid,'Davide Gilè: https://www.instagram.com/davide_gile/')
             bot.sendMessage(chatid,'Joe Lepore: https://www.instagram.com/joe.lepore/')
         if step == 9:
-            bot.sendMessage(chatid, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
+            bot.sendMessage(chatid, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu, resize_keyboard = True))
         if step == 999:
             db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
             idAnimaGemella = db.fetchone()[0]
