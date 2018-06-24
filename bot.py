@@ -74,7 +74,7 @@ def main(msg):
             db.execute('DELETE FROM AnimaGemella WHERE ID = ?', (chatid,))
             conn.commit()
             bot.sendMessage(chatid, 'Non fare troppo lo sborone e clicca /start')
-        if (chatid == 409317117 or chatid == 423869824) and text == '/delete':
+        elif (chatid == 409317117 or chatid == 423869824) and text == '/delete':
             bot.sendMessage(chatid,'Cognome: ')
             step=1000
             updateStep(step, chatid)
@@ -96,6 +96,13 @@ def main(msg):
             if step < 9:
                 bot.sendMessage(chatid,'Devi prima registrarti.')
             elif (step > 8 and step < 113) or step == 200 or step == 115:
+                if step == 115 or (step >=111 and step <113):
+                    db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
+                    idAnimaGemella = db.fetchone()[0]
+                    bot.sendMessage(idAnimaGemella,"La persona ha cancellato la richiesta. Vuoi cercare un'altra persona?", reply_markup = ReplyKeyboardMarkup(keyboard = keybSiNo))
+                    bot.sendMessage(chatid,"Hai cancellato la richiesta.", reply_markup = ReplyKeyboardMarkup(keyboard = keybSiNo))
+                    step = 114
+                    updateStep(step,idAnimaGemella)
                 db.execute('DELETE FROM AnimaGemella WHERE ID = ?', (chatid,))
                 db.execute('INSERT INTO AnimaGemella (ID) VALUES (?)', (chatid,))
                 db.execute('UPDATE AnimaGemella SET IDAG = ? WHERE ID = ?', (chatid, chatid,))
