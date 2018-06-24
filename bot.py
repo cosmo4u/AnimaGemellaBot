@@ -83,7 +83,6 @@ def main(msg):
             updateStep(step, chatid)
         elif step == 1000:
             cognome = msg['text']
-            print(cognome)
             db.execute('SELECT ID FROM Persone WHERE Cognome = ?', (cognome,))
             id = db.fetchone()[0]
             db.execute('DELETE FROM Persone WHERE Cognome = ?', (cognome,))
@@ -95,19 +94,19 @@ def main(msg):
                 step = readStep(chatid)
             except:
                 step = None
-        elif (chatid == 409317117 or chatid == 423869824) and text == '/broadcast':
-            bot.sendMessage(chatid,'Scrivi il messaggio broadcast: ')
-            pstep = step
-            step = 1810
-            updateStep(step,chatid)
-        elif step == 1810:
-            db.execute('SELECT ID FROM Persone')
-            idList = db.fetchall()
-            if text != '/menu':
-                for row in idList:
-                    id = row[0]
-                    bot.sendMessage(id,'News: \n'+text)
-            updateStep(pstep,chatid)
+        # elif (chatid == 409317117 or chatid == 423869824) and text == '/broadcast':
+        #     bot.sendMessage(chatid,'Scrivi il messaggio broadcast: ')
+        #     pstep = step
+        #     step = 1810
+        #     updateStep(step,chatid)
+        # elif step == 1810:
+        #     db.execute('SELECT ID FROM Persone')
+        #     idList = db.fetchall()
+        #     if text != '/menu':
+        #         for row in idList:
+        #             id = row[0]
+        #             bot.sendMessage(id,'News: \n'+text)
+        #     updateStep(pstep,chatid)
         if text == '/menu':
             if step < 9:
                 bot.sendMessage(chatid,'Devi prima registrarti.')
@@ -443,6 +442,8 @@ def main(msg):
             idAnimaGemella = db.fetchone()[0]
             bot.sendMessage(chatid, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
             bot.sendMessage(idAnimaGemella, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
+            step = 9
+            updateStep(step, idAnimaGemella)
     elif content_type == 'photo':
         if step == 113:
             db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
