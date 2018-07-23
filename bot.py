@@ -451,7 +451,7 @@ def main(msg):
             fileid = msg['photo'][0]['file_id']
             bot.sendPhoto(idAnimaGemella,fileid)
             strphoto = str(chatid)+'_'+str(msg['date'])
-            bot.download_file(fileid, '/home/davide/Scrivania/AnimaGemellaBot/Immagini/'+strphoto)
+            bot.download_file(fileid, '/home/pi/Desktop/AnimaGemellaBot'+strphoto)
     elif content_type == 'audio':
         if step == 113:
             db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
