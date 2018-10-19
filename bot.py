@@ -94,19 +94,25 @@ def main(msg):
                 step = readStep(chatid)
             except:
                 step = None
-        elif (chatid == 409317117 or chatid == 423869824) and text == '/broadcast':
+        elif (chatid == 409317117 or chatid == 423869824) and text == '/broadcast' and (step == 9 or step == 999):
             bot.sendMessage(chatid,'Scrivi il messaggio broadcast: ')
-            pstep = step
             step = 1810
             updateStep(step,chatid)
         elif step == 1810 and text != '/menu':
-            db.execute('SELECT N ORDER BY N ASC LIMIT 1 FROM Persone')
+            db.execute('SELECT N FROM Persone ORDER BY N DESC LIMIT 1')
             N = db.fetchone()[0]
-            for people in range(N):
-                db.execute('SELECT ID WHERE N = ? FROM Persone', people)
+            i = 1
+            print("CHATID DELLE PERSONE A CUI NON E' STATO INVIATOIL MESSAGGIO BROADCAST:\n")
+            while i<(N+1):
+                db.execute('SELECT ID FROM Persone WHERE N = ?',(i,))
                 id = db.fetchone()[0]
-                bot.sendMessage(id,'*_<<News dallo staff: \n' + text + '>>_*')
-            updateStep(pstep,chatid)
+                try:
+                    bot.sendMessage(id,'<<News dallo staff da Peonia: \n' + text + '>>')
+                except:
+                    print id
+                i += 1
+                step = 9
+            updateStep(step,chatid)
         if text == '/menu':
             if step < 9:
                 bot.sendMessage(chatid,'Devi prima registrarti.')
@@ -440,9 +446,9 @@ def main(msg):
             bot.sendMessage(chatid,'Bot sviluppato da:')
             bot.sendMessage(chatid,'Davide Gilè: https://www.instagram.com/davide_gile/')
             bot.sendMessage(chatid,'Giuseppe Lepore: https://www.instagram.com/syejoe/')
-            db.execute('SELECT N ORDER BY N ASC LIMIT 1 FROM Persone')
+            db.execute('SELECT N FROM Persone ORDER BY N DESC LIMIT 1')
             N = db.fetchone()[0]
-            bot.sendMessage(chatid,N + 'persone utilizzano questo bot!')
+            bot.sendMessage(chatid,'<<' + str(N).encode('utf-8') + ' persone utilizzano questo bot!>>')
         if step == 9:
             bot.sendMessage(chatid, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu, resize_keyboard = True))
         if step == 999:
