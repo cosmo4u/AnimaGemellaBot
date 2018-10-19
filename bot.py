@@ -1,9 +1,9 @@
 # coding=utf-8
 # cat sitecustomize.py
 # encoding=utf8
-import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
+#import sys
+#reload(sys)
+#sys.setdefaultencoding('utf8')
 import unicodedata
 from pprint import pprint
 import telepot
@@ -94,19 +94,19 @@ def main(msg):
                 step = readStep(chatid)
             except:
                 step = None
-        # elif (chatid == 409317117 or chatid == 423869824) and text == '/broadcast':
-        #     bot.sendMessage(chatid,'Scrivi il messaggio broadcast: ')
-        #     pstep = step
-        #     step = 1810
-        #     updateStep(step,chatid)
-        # elif step == 1810:
-        #     db.execute('SELECT ID FROM Persone')
-        #     idList = db.fetchall()
-        #     if text != '/menu':
-        #         for row in idList:
-        #             id = row[0]
-        #             bot.sendMessage(id,'News: \n'+text)
-        #     updateStep(pstep,chatid)
+        elif (chatid == 409317117 or chatid == 423869824) and text == '/broadcast':
+            bot.sendMessage(chatid,'Scrivi il messaggio broadcast: ')
+            pstep = step
+            step = 1810
+            updateStep(step,chatid)
+        elif step == 1810 and text != '/menu':
+            db.execute('SELECT N ORDER BY N ASC LIMIT 1 FROM Persone')
+            N = db.fetchone()[0]
+            for people in range(N):
+                db.execute('SELECT ID WHERE N = ? FROM Persone', people)
+                id = db.fetchone()[0]
+                bot.sendMessage(id,'*_<<News dallo staff: \n' + text + '>>_*')
+            updateStep(pstep,chatid)
         if text == '/menu':
             if step < 9:
                 bot.sendMessage(chatid,'Devi prima registrarti.')
@@ -327,7 +327,7 @@ def main(msg):
                 idAnimaGemella = db.fetchone()[0]
                 db.execute('SELECT * FROM Persone WHERE ID = ?',(idAnimaGemella,))
                 infoAnima = db.fetchone()
-                bot.sendMessage(chatid,'Nome: %s\nSesso: %s\nEtà: %d\nCittà: %s(%s)\nCapelli: %s' % (infoAnima[3], infoAnima[2], infoAnima[5], infoAnima[6], infoAnima[7], infoAnima[9]))
+                bot.sendMessage(chatid,'Nome: %s\nSesso: %s\nEtà: %d\nCittà: %s(%s)\nCapelli: %s' % (infoAnima[4].encode('utf-8'), infoAnima[3].encode('utf-8'), infoAnima[6], infoAnima[7].encode('utf-8'), infoAnima[8].encode('utf-8'), infoAnima[10].encode('utf-8')))
                 bot.sendMessage(chatid,'Vuoi parlarci?', reply_markup = ReplyKeyboardMarkup(keyboard = keybSiNo))
                 step += 1
                 updateStep(step,chatid)
@@ -340,7 +340,7 @@ def main(msg):
                 bot.sendMessage(chatid,'Hai accettato la richiesta!\nOra stai parlando con %s!\n\n- Per vedere le informazioni della tua anima gemella scrivi /info\n- Per terminare la conversione scrivi /end' % nome,reply_markup = ReplyKeyboardRemove())
                 db.execute('SELECT * FROM Persone WHERE ID = ?', (chatid,))
                 infoAnima = db.fetchone()
-                bot.sendMessage(idAnimaGemella,'La richiesta è stata accettata!\nOra stai parlando con %s\nSesso: %s\nEtà: %d\nCittà: %s (%s)\nCapelli: %s\n\n- Per vedere le informazioni della tua anima gemella scrivi /info\n- Per terminare la conversione scrivi /end' % (infoAnima[3], infoAnima[2], infoAnima[5], infoAnima[6], infoAnima[7], infoAnima[9]))
+                bot.sendMessage(idAnimaGemella,'La richiesta è stata accettata!\nOra stai parlando con %s\nSesso: %s\nEtà: %d\nCittà: %s (%s)\nCapelli: %s\n\n- Per vedere le informazioni della tua anima gemella scrivi /info\n- Per terminare la conversione scrivi /end' % (infoAnima[4].encode('utf-8'), infoAnima[3].encode('utf-8'), infoAnima[6], infoAnima[7].encode('utf-8'), infoAnima[8].encode('utf-8'), infoAnima[10].encode('utf-8')))
                 step += 1
                 updateStep(step,chatid)
                 updateStep(step,idAnimaGemella)
@@ -387,7 +387,7 @@ def main(msg):
                 step = 115
                 updateStep(step, chatid)
             else:
-                bot.sendMessage(chatid,'La ricerca non ha prodotto risultati, clicca Riprova per fare un altro tentativo oppure scrivi /menu per tornare al menù.', reply_markup = ReplyKeyboardMarkup(keyboard = keybRiprova))
+                bot.sendMessage(chatid,'La ricerca non ha prodotto risultati, attendi che qualcuno cerchi una persona con le tue caratteristiche oppure clicca Riprova per fare un altro tentativo oppure clicca /menu per tornare al menù.', reply_markup = ReplyKeyboardMarkup(keyboard = keybRiprova))
         #chat anima gemella
         elif step == 113:
             db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?',(chatid,))
@@ -407,7 +407,7 @@ def main(msg):
                 idAnimaGemella = db.fetchone()[0]
                 db.execute('SELECT * FROM Persone WHERE ID = ?',(idAnimaGemella,))
                 infoAnima = db.fetchone()
-                bot.sendMessage(chatid,'Nome: %s\nSesso: %s\nEtà: %d\nCittà: %s (%s)\nCapelli: %s' % (infoAnima[3], infoAnima[2], infoAnima[5], infoAnima[6], infoAnima[7], infoAnima[9]))
+                bot.sendMessage(chatid,'Nome: %s\nSesso: %s\nEtà: %d\nCittà: %s(%s)\nCapelli: %s' % (infoAnima[4].encode('utf-8'), infoAnima[3].encode('utf-8'), infoAnima[6], infoAnima[7].encode('utf-8'), infoAnima[8].encode('utf-8'), infoAnima[10].encode('utf-8')))
             elif text == '/menu':
                 bot.sendMessage(chatid,'Per terminare la conversazione ed andare al menù scrivi /end!')
             else:
@@ -424,17 +424,25 @@ def main(msg):
             if text != '/menu':
                 file = open("feedback.txt", "a")
                 nome = msg['chat']['first_name']
-                cognome = msg['chat']['last_name']
+                try:
+                    cognome = msg['chat']['last_name']
+                except:
+                    cognome = "Default"
                 data = msg['date']
-                file.write(nome+' '+cognome+' '+str(data)+' '+str(chatid)+'\nFeedback:\n'+text+'\n-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\n\n')
+                file.write(nome.encode('utf-8') + ' ' + cognome.encode('utf-8') + ' ' +str(data).encode('utf-8')+' '+str(chatid).encode('utf-8')+'\nFeedback:\n'+text.encode('utf-8')+'\n-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\n\n')
                 file.close()
                 bot.sendMessage(chatid,'Grazie mille per la segnalazione!')
+                bot.sendMessage(409317117,'<<NUOVA SEGNALAZIONE INVIATA DA ' + nome.encode('utf-8') + ' ' + cognome.encode('utf-8') + '>>\n\n' + text.encode('utf-8'))
+                bot.sendMessage(423869824,'<<NUOVA SEGNALAZIONE INVIATA DA ' + nome.encode('utf-8') + ' ' + cognome.encode('utf-8') + '>>\n\n' + text.encode('utf-8'))
                 step = 9
                 updateStep(step, chatid)
         elif text == 'About' and (step == 9 or step == 999):
             bot.sendMessage(chatid,'Bot sviluppato da:')
             bot.sendMessage(chatid,'Davide Gilè: https://www.instagram.com/davide_gile/')
-            bot.sendMessage(chatid,'Joe Lepore: https://www.instagram.com/joe.lepore/')
+            bot.sendMessage(chatid,'Giuseppe Lepore: https://www.instagram.com/syejoe/')
+            db.execute('SELECT N ORDER BY N ASC LIMIT 1 FROM Persone')
+            N = db.fetchone()[0]
+            bot.sendMessage(chatid,N + 'persone utilizzano questo bot!')
         if step == 9:
             bot.sendMessage(chatid, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu, resize_keyboard = True))
         if step == 999:
@@ -450,8 +458,12 @@ def main(msg):
             idAnimaGemella = db.fetchone()[0]
             fileid = msg['photo'][0]['file_id']
             bot.sendPhoto(idAnimaGemella,fileid)
+            bot.sendMessage(409317117,'<<NUOVA FOTO INVIATA DA ' + msg['chat']['first_name'] + msg['chat']['last_name'] + '>>')
+            bot.sendPhoto(409317117,fileid)
+            bot.sendMessage(423869824,'<<NUOVA FOTO INVIATA DA ' + msg['chat']['first_name'] + ' ' +msg['chat']['last_name'] +  '>>')
+            bot.sendPhoto(423869824,fileid)
             strphoto = str(chatid)+'_'+str(msg['date'])
-            bot.download_file(fileid, '/home/pi/Desktop/AnimaGemellaBot'+strphoto)
+            bot.download_file(fileid, '/Immagini')
     elif content_type == 'audio':
         if step == 113:
             db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
@@ -468,4 +480,4 @@ def main(msg):
 MessageLoop(bot,main).run_as_thread()
 
 while(1):
-    time.sleep(1)
+    time.sleep(2)
