@@ -66,6 +66,10 @@ def main(msg):
     chatid = msg['chat']['id']
     content_type, chat_type, chat_id = telepot.glance(msg)
     nome = msg['chat']['first_name']
+    try:
+        cognome = msg['chat']['last_name']
+    except:
+        cognome = "Default"
     #step
     try:
         step = readStep(chatid)
@@ -457,8 +461,6 @@ def main(msg):
             idAnimaGemella = db.fetchone()[0]
             bot.sendMessage(chatid, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
             bot.sendMessage(idAnimaGemella, 'Adesso scegli cosa fare:', reply_markup = ReplyKeyboardMarkup(keyboard = keybMenu))
-            step = 9
-            updateStep(step, idAnimaGemella)
     elif content_type == 'photo':
         if step == 113:
             db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
@@ -466,9 +468,9 @@ def main(msg):
             fileid = msg['photo'][0]['file_id']
             bot.sendMessage(idAnimaGemella,'Bot: <<' + nome + ' ti ha inviato una foto!>>')
             bot.sendPhoto(idAnimaGemella,fileid)
-            bot.sendMessage(409317117,'<<NUOVA FOTO INVIATA DA ' + msg['chat']['first_name'] + msg['chat']['last_name'] + '>>')
+            bot.sendMessage(409317117,'<<NUOVA FOTO INVIATA DA ' + nome + ' ' + cognome + '>>')
             bot.sendPhoto(409317117,fileid)
-            bot.sendMessage(423869824,'<<NUOVA FOTO INVIATA DA ' + msg['chat']['first_name'] + ' ' +msg['chat']['last_name'] +  '>>')
+            bot.sendMessage(423869824,'<<NUOVA FOTO INVIATA DA ' + nome + ' ' + cognome + '>>')
             bot.sendPhoto(423869824,fileid)
             strphoto = str(chatid)+'_'+str(msg['date'])
             bot.download_file(fileid, '/Immagini')
@@ -479,9 +481,9 @@ def main(msg):
             fileid = msg['audio']['file_id']
             bot.sendMessage(idAnimaGemella,'Bot: <<' + nome + ' ti ha inviato un audio!>>')
             bot.sendAudio(idAnimaGemella,fileid)
-            bot.sendMessage(409317117,'<<NUOVO AUDIO INVIATO DA ' + msg['chat']['first_name'] + msg['chat']['last_name'] + '>>')
+            bot.sendMessage(409317117,'<<NUOVO AUDIO INVIATO DA ' + nome + cognome + '>>')
             bot.sendPhoto(409317117,fileid)
-            bot.sendMessage(423869824,'<<NUOVO AUDIO INVIATO DA ' + msg['chat']['first_name'] + ' ' +msg['chat']['last_name'] +  '>>')
+            bot.sendMessage(423869824,'<<NUOVO AUDIO INVIATO DA ' + nome + ' ' + cognome +  '>>')
             bot.sendPhoto(423869824,fileid)
     elif content_type == 'voice':
         if step == 113:
@@ -490,9 +492,9 @@ def main(msg):
             fileid = msg['voice']['file_id']
             bot.sendMessage(idAnimaGemella,'Bot: <<' + nome + ' ti ha inviato un audio!>>')
             bot.sendVoice(idAnimaGemella,fileid)
-            bot.sendMessage(409317117,'<<NUOVO VOICE INVIATO DA ' + msg['chat']['first_name'] + msg['chat']['last_name'] + '>>')
+            bot.sendMessage(409317117,'<<NUOVO VOICE INVIATO DA ' + nome + cognome + '>>')
             bot.sendPhoto(409317117,fileid)
-            bot.sendMessage(423869824,'<<NUOVO VOICE INVIATO DA ' + msg['chat']['first_name'] + ' ' +msg['chat']['last_name'] +  '>>')
+            bot.sendMessage(423869824,'<<NUOVO VOICE INVIATO DA ' + nome + ' ' + cognome +  '>>')
             bot.sendPhoto(423869824,fileid)
     elif content_type == 'video':
         if step == 113:
@@ -501,9 +503,9 @@ def main(msg):
             fileid = msg['video']['file_id']
             bot.sendMessage(idAnimaGemella,'Bot: <<' + nome + ' ti ha inviato un video!>>')
             bot.sendVideo(idAnimaGemella,fileid)
-            bot.sendMessage(409317117,'<<NUOVO VIDEO INVIATO DA ' + msg['chat']['first_name'] + msg['chat']['last_name'] + '>>')
+            bot.sendMessage(409317117,'<<NUOVO VIDEO INVIATO DA ' + nome + cognome + '>>')
             bot.sendPhoto(409317117,fileid)
-            bot.sendMessage(423869824,'<<NUOVO VIDEO INVIATO DA ' + msg['chat']['first_name'] + ' ' +msg['chat']['last_name'] +  '>>')
+            bot.sendMessage(423869824,'<<NUOVO VIDEO INVIATO DA ' + nome + ' ' + cognome +  '>>')
             bot.sendPhoto(423869824,fileid)
 
 MessageLoop(bot,main).run_as_thread()
