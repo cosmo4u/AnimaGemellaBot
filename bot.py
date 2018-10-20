@@ -65,6 +65,7 @@ def main(msg):
     global pstep
     chatid = msg['chat']['id']
     content_type, chat_type, chat_id = telepot.glance(msg)
+    nome = msg['chat']['first_name']
     #step
     try:
         step = readStep(chatid)
@@ -72,12 +73,12 @@ def main(msg):
         step = None
     if content_type == 'text':
         text = msg['text']
-        if (chatid == 409317117 or chatid == 423869824) and text == '/deleteme':
+        if (chatid == 409317117 or chatid == 423869824) and text == '/deleteme' and (step == 9 or step == 999):
             db.execute('DELETE FROM Persone WHERE ID = ?', (chatid,))
             db.execute('DELETE FROM AnimaGemella WHERE ID = ?', (chatid,))
             conn.commit()
             bot.sendMessage(chatid, 'Non fare troppo lo sborone e clicca /start')
-        elif (chatid == 409317117 or chatid == 423869824) and text == '/delete':
+        elif (chatid == 409317117 or chatid == 423869824) and text == '/delete' and (step == 9 or step == 999):
             bot.sendMessage(chatid,'Cognome: ')
             step=1000
             updateStep(step, chatid)
@@ -102,12 +103,12 @@ def main(msg):
             db.execute('SELECT N FROM Persone ORDER BY N DESC LIMIT 1')
             N = db.fetchone()[0]
             i = 1
-            print("CHATID DELLE PERSONE A CUI NON E' STATO INVIATOIL MESSAGGIO BROADCAST:\n")
+            print("CHATID DELLE PERSONE A CUI NON E' STATO INVIATO IL MESSAGGIO BROADCAST:\n")
             while i<(N+1):
                 db.execute('SELECT ID FROM Persone WHERE N = ?',(i,))
                 id = db.fetchone()[0]
                 try:
-                    bot.sendMessage(id,'<<News dallo staff da Peonia: \n' + text + '>>')
+                    bot.sendMessage(id,'BOT: <<News dallo staff da Peonia: \n' + text + '>>')
                 except:
                     print id
                 i += 1
@@ -418,7 +419,7 @@ def main(msg):
                 bot.sendMessage(chatid,'Per terminare la conversazione ed andare al menù scrivi /end!')
             else:
                 if text != '/Si' and text != '/No':
-                    bot.sendMessage(idAnimaGemella,text)
+                    bot.sendMessage(idAnimaGemella,nome + ': ' + text)
         if text == 'Invia una segnalazione' and (step == 9 or step == 999):
             bot.sendMessage(chatid,'Adesso puoi segnalare un bug o inviare un feedback!\nScrivilo qui oppure torna al menu scrivendo /menu.', reply_markup = ReplyKeyboardRemove())
             step = 200
@@ -463,6 +464,7 @@ def main(msg):
             db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
             idAnimaGemella = db.fetchone()[0]
             fileid = msg['photo'][0]['file_id']
+            bot.sendMessage(idAnimaGemella,'Bot: <<' + nome + ' ti ha inviato una foto!>>')
             bot.sendPhoto(idAnimaGemella,fileid)
             bot.sendMessage(409317117,'<<NUOVA FOTO INVIATA DA ' + msg['chat']['first_name'] + msg['chat']['last_name'] + '>>')
             bot.sendPhoto(409317117,fileid)
@@ -475,13 +477,34 @@ def main(msg):
             db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
             idAnimaGemella = db.fetchone()[0]
             fileid = msg['audio']['file_id']
+            bot.sendMessage(idAnimaGemella,'Bot: <<' + nome + ' ti ha inviato un audio!>>')
             bot.sendAudio(idAnimaGemella,fileid)
+            bot.sendMessage(409317117,'<<NUOVO AUDIO INVIATO DA ' + msg['chat']['first_name'] + msg['chat']['last_name'] + '>>')
+            bot.sendPhoto(409317117,fileid)
+            bot.sendMessage(423869824,'<<NUOVO AUDIO INVIATO DA ' + msg['chat']['first_name'] + ' ' +msg['chat']['last_name'] +  '>>')
+            bot.sendPhoto(423869824,fileid)
     elif content_type == 'voice':
         if step == 113:
             db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
             idAnimaGemella = db.fetchone()[0]
             fileid = msg['voice']['file_id']
+            bot.sendMessage(idAnimaGemella,'Bot: <<' + nome + ' ti ha inviato un audio!>>')
             bot.sendVoice(idAnimaGemella,fileid)
+            bot.sendMessage(409317117,'<<NUOVO VOICE INVIATO DA ' + msg['chat']['first_name'] + msg['chat']['last_name'] + '>>')
+            bot.sendPhoto(409317117,fileid)
+            bot.sendMessage(423869824,'<<NUOVO VOICE INVIATO DA ' + msg['chat']['first_name'] + ' ' +msg['chat']['last_name'] +  '>>')
+            bot.sendPhoto(423869824,fileid)
+    elif content_type == 'video':
+        if step == 113:
+            db.execute('SELECT IDAG FROM AnimaGemella WHERE ID = ?', (chatid,))
+            idAnimaGemella = db.fetchone()[0]
+            fileid = msg['video']['file_id']
+            bot.sendMessage(idAnimaGemella,'Bot: <<' + nome + ' ti ha inviato un video!>>')
+            bot.sendVideo(idAnimaGemella,fileid)
+            bot.sendMessage(409317117,'<<NUOVO VIDEO INVIATO DA ' + msg['chat']['first_name'] + msg['chat']['last_name'] + '>>')
+            bot.sendPhoto(409317117,fileid)
+            bot.sendMessage(423869824,'<<NUOVO VIDEO INVIATO DA ' + msg['chat']['first_name'] + ' ' +msg['chat']['last_name'] +  '>>')
+            bot.sendPhoto(423869824,fileid)
 
 MessageLoop(bot,main).run_as_thread()
 
